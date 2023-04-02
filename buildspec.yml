@@ -1,0 +1,29 @@
+version: 0.2
+
+env:
+  variables:
+    FRONTEND_BUCKET: "findlove"
+
+phases:
+  build:
+    commands:
+      - echo "Deploying From Source"
+      - pwd
+      - ls
+      - printenv
+
+  lambdas:
+    commands:
+      - echo "Deploying lambdas"
+      - cd lambdas
+      - include: lambdas/buildspec.yml
+        continue-on-error: true
+      - cd ..
+
+  frontend:
+    commands:
+      - echo "Deploying Frontend..."
+      - cd frontend
+      - include: frontend/buildspec.yml
+        continue-on-error: true
+      - cd ..
