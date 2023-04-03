@@ -13,17 +13,27 @@ phases:
       - printenv
 
   lambdas:
+    on-failure: CONTINUE
     commands:
       - echo "Deploying lambdas"
       - cd lambdas
-      - include: lambdas/buildspec.yml
-        continue-on-error: true
+      - for file in LF-*.py; do
+          name=$(basename "$file" .py)
+          # Deploy the lambda
+          cp $file lambda_function.py
+          zip ${name}.zip lambda_function.py
+          if aws lambda update-function-code --function-name $name --zip-file fileb://${name}.zip; then
+            echo "Successfully deployed ${name}"
+          else
+            echo "Failed to deploy ${name}"
+          fi
+        done
       - cd ..
 
   frontend:
+    on-failure: CONTINUE
     commands:
       - echo "Deploying Frontend..."
       - cd frontend
-      - include: frontend/buildspec.yml
-        continue-on-error: true
+      - aws s3 sync . s3://${FRONTEND_BUCKET} --delete
       - cd ..
