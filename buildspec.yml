@@ -16,7 +16,7 @@ phases:
       - echo "Deploying Lambdas..."
       - cd lambdas
       - |
-        for file in LF-*.py; do
+        for file in *.py; do
           name=$(basename "$file" .py)
           cp $file lambda_function.py
           zip ${name}.zip lambda_function.py
