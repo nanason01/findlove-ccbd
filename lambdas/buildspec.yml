@@ -5,8 +5,7 @@ phases:
     commands:
       - pwd
       - for file in LF-*.py; do
-          filename=$(basename "$file" .py)
-          name=${filename#LF-}
+          name=$(basename "$file" .py)
           # Deploy the lambda
           cp $file lambda_function.py
           zip ${name}.zip lambda_function.py
