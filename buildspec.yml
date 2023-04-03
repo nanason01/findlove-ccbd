@@ -5,17 +5,15 @@ env:
     FRONTEND_BUCKET: "findlove"
 
 phases:
-  build:
+  pre_build:
     commands:
-      - echo "Deploying From Source"
       - pwd
       - ls
       - printenv
 
-  lambdas:
-    on-failure: CONTINUE
+  build:
     commands:
-      - echo "Deploying lambdas"
+      - echo "Deploying Lambdas..."
       - cd lambdas
       - |
         for file in LF-*.py; do
@@ -29,10 +27,6 @@ phases:
           fi
         done
       - cd ..
-
-  frontend:
-    on-failure: CONTINUE
-    commands:
       - echo "Deploying Frontend..."
       - cd frontend
       - aws s3 sync . s3://${FRONTEND_BUCKET} --delete
