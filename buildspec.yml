@@ -17,17 +17,17 @@ phases:
     commands:
       - echo "Deploying lambdas"
       - cd lambdas
-      - for file in LF-*.py; do
-          name=$(basename "$file" .py)
-          # Deploy the lambda
-          cp $file lambda_function.py
-          zip ${name}.zip lambda_function.py
-          if aws lambda update-function-code --function-name $name --zip-file fileb://${name}.zip; then
-            echo "Successfully deployed ${name}"
-          else
-            echo "Failed to deploy ${name}"
-          fi
-        done
+      - |
+      for file in LF-*.py; do
+        name=$(basename "$file" .py)
+        cp $file lambda_function.py
+        zip ${name}.zip lambda_function.py
+        if aws lambda update-function-code --function-name $name --zip-file fileb://${name}.zip; then
+          echo "Successfully deployed ${name}"
+        else
+          echo "Failed to deploy ${name}"
+        fi
+      done
       - cd ..
 
   frontend:
