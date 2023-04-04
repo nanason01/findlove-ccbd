@@ -8,10 +8,10 @@ dynamodb = boto3.client('dynamodb')
 def reset_tables():
     # Delete "decisions" table if it exists
     try:
-        response = dynamodb.delete_table(TableName='decisions')
-
-        waiter = dynamodb.get_waiter('table_not_exists')
+        waiter = dynamodb.get_waiter('table_exists')
         waiter.wait(TableName='decisions')
+
+        response = dynamodb.delete_table(TableName='decisions')
 
         print("Decisions table deleted successfully!")
     except dynamodb.exceptions.ResourceNotFoundException:
@@ -19,14 +19,19 @@ def reset_tables():
 
     # Delete "users" table if it exists
     try:
-        response = dynamodb.delete_table(TableName='users')
-
-        waiter = dynamodb.get_waiter('table_not_exists')
+        waiter = dynamodb.get_waiter('table_exists')
         waiter.wait(TableName='users')
+
+        response = dynamodb.delete_table(TableName='users')
 
         print("Users table deleted successfully!")
     except dynamodb.exceptions.ResourceNotFoundException:
         print("Users table does not exist, skipping delete.")
+
+    waiter = dynamodb.get_waiter('table_not_exists')
+    waiter.wait(TableName='decisions')
+    waiter = dynamodb.get_waiter('table_not_exists')
+    waiter.wait(TableName='users')
 
     # Create "candidates" table
     response = dynamodb.create_table(
@@ -56,8 +61,6 @@ def reset_tables():
             'WriteCapacityUnits': 5
         }
     )
-    waiter = dynamodb.get_waiter('table_exists')
-    waiter.wait(TableName='decisions')
     print("Decisions table created successfully!")
 
     # Create "users" table
@@ -80,8 +83,6 @@ def reset_tables():
             'WriteCapacityUnits': 5
         }
     )
-    waiter = dynamodb.get_waiter('table_exists')
-    waiter.wait(TableName='users')
     print("Users table created successfully!")
 
 
@@ -104,16 +105,25 @@ def fill_sample_data():
         {"user_id": "alice", "candidate_id": "eve", "liked": True},
     ]
 
+    waiter = dynamodb.get_waiter('table_exists')
+    waiter.wait(TableName='users')
+
     # Put user data into "user_data" table
     for user in users:
+
+        item = {
+            'matches': {'SS': user['matches']}
+        } if user['matches'] else {}
+        item['id'] = {'S': user['id']}
+
         response = dynamodb.put_item(
-            TableName='user_data',
-            Item={
-                'id': {'S': user['id']},
-                'matches': {'SS': user['matches']}
-            }
+            TableName='users',
+            Item=item
         )
         print(response)
+
+    waiter = dynamodb.get_waiter('table_exists')
+    waiter.wait(TableName='decisions')
 
     # Put decisions data into "decisions" table
     for decision in decisions:
