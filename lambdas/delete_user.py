@@ -47,16 +47,27 @@ def remove_from_matches_list(user_id, match_id):
     )
     matches = response['Item']['matches']['SS'] if 'matches' in response['Item'] else []
 
+    if match_id not in matches:
+        return
+
     # Remove the match ID from the matches list
     matches.remove(match_id)
 
     # Update the matches list for the user
-    response = dynamodb.update_item(
-        TableName=table_name,
-        Key={'id': {'S': user_id}},
-        UpdateExpression='SET matches = :matches',
-        ExpressionAttributeValues={':matches': {'SS': matches}}
-    )
+    response = None
+    if matches:
+        response = dynamodb.update_item(
+            TableName=table_name,
+            Key={'id': {'S': user_id}},
+            UpdateExpression='SET matches = :matches',
+            ExpressionAttributeValues={':matches': {'SS': matches}}
+        )
+    else:
+        response = dynamodb.update_item(
+            TableName=table_name,
+            Key={'id': {'S': user_id}},
+            UpdateExpression='REMOVE matches'
+        )
 
     # Print the response
     print('removing match', match_id, 'from', user_id, 'table resp:', response)
@@ -84,26 +95,8 @@ def lambda_handler(event, _):
         print(f"Removing {user_id} from {match}'s match list")
         remove_from_matches_list(match, user_id)
 
-    # Remove any decisions referrencing user
-    print('Updating decisions table...')
-    table_name = 'decisions'
-    delete_query = {
-        'TableName': table_name,
-        'KeyConditionExpression': '#user_id = :user_id OR #candidate_id = :candidate_id',
-        'ExpressionAttributeNames': {
-            '#user_id': 'user_id',
-            '#candidate_id': 'candidate_id'
-        },
-        'ExpressionAttributeValues': {
-            ':user_id': {'S': user_id},
-            ':candidate_id': {'S': user_id}
-        }
-    }
-
-    response = dynamodb.query(**delete_query)
-    for item in response['Items']:
-        dynamodb.delete_item(TableName=table_name, Key={
-                             'user_id': item['user_id'], 'candidate_id': item['candidate_id']})
+    # This will leave references in the decisions table, these are tiny per user
+    # and less expensive to just let TTL get them than a scan.
 
     # Delete the user
     table_name = 'users'

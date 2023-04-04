@@ -54,12 +54,20 @@ def remove_from_matches_list(user_id, match_id):
     matches.remove(match_id)
 
     # Update the matches list for the user
-    response = dynamodb.update_item(
-        TableName=table_name,
-        Key={'id': {'S': user_id}},
-        UpdateExpression='SET matches = :matches',
-        ExpressionAttributeValues={':matches': {'SS': matches}}
-    )
+    response = None
+    if matches:
+        response = dynamodb.update_item(
+            TableName=table_name,
+            Key={'id': {'S': user_id}},
+            UpdateExpression='SET matches = :matches',
+            ExpressionAttributeValues={':matches': {'SS': matches}}
+        )
+    else:
+        response = dynamodb.update_item(
+            TableName=table_name,
+            Key={'id': {'S': user_id}},
+            UpdateExpression='REMOVE matches'
+        )
 
     # Print the response
     print('removing match', match_id, 'from', user_id, 'table resp:', response)
