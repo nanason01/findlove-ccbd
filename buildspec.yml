@@ -16,18 +16,15 @@ phases:
       - echo "Deploying Lambdas..."
       - cd lambdas
       - |
-        for file in *.py; do
-          name=$(basename "$file" .py)
-          cp $file lambda_function.py
-          zip ${name}.zip lambda_function.py
-          if aws lambda update-function-code --function-name $name --zip-file fileb://${name}.zip; then
-            echo "Successfully deployed ${name}"
-          else
-            echo "Failed to deploy ${name}"
+        for lambda in ./*/; do
+          if [[ -d "$lambda" ]]; then
+            cd $lambda
+            zip ${lambda}.zip *
+            if aws lambda update-function-code --function-name $lambda --zip-file fileb://${lambda}.zip; then
+              echo "Successfully deployed ${lambda}"
+            else
+              echo "Failed to deploy ${lambda}"
+            fi
           fi
         done
-      - cd ..
-      - echo "Deploying Frontend..."
-      - cd frontend
-      - aws s3 sync . s3://${FRONTEND_BUCKET} --delete
       - cd ..
