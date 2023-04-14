@@ -1,7 +1,7 @@
-import boto3
 from botocore.exceptions import ClientError
 
-dynamodb = boto3.client('dynamodb')
+import common.decisions
+from common.CORS import CORS
 
 # Expected event format:
 #
@@ -22,77 +22,29 @@ dynamodb = boto3.client('dynamodb')
 # }
 
 
-def user_exists(user_id: str) -> bool:
-    try:
-        table_name = 'users'
-        response = dynamodb.get_item(
-            TableName=table_name,
-            Key={'id': {'S': user_id}},
-            ProjectionExpression='id'
-        )
-        print('user exists resp:', response)
-        return 'Item' in response
-    except Exception as e:
-        print('user exists error:', e)
-        return False
-
-
-def remove_from_matches_list(user_id, match_id):
-    # Get the current matches list for the user
-    table_name = 'users'
-    response = dynamodb.get_item(
-        TableName=table_name,
-        Key={'id': {'S': user_id}},
-        ProjectionExpression='matches'
-    )
-    matches = response['Item']['matches']['SS'] if 'matches' in response['Item'] else []
-
-    if match_id not in matches:
-        return
-
-    # Remove the match ID from the matches list
-    matches.remove(match_id)
-
-    # Update the matches list for the user
-    response = None
-    if matches:
-        response = dynamodb.update_item(
-            TableName=table_name,
-            Key={'id': {'S': user_id}},
-            UpdateExpression='SET matches = :matches',
-            ExpressionAttributeValues={':matches': {'SS': matches}}
-        )
-    else:
-        response = dynamodb.update_item(
-            TableName=table_name,
-            Key={'id': {'S': user_id}},
-            UpdateExpression='REMOVE matches'
-        )
-
-    # Print the response
-    print('removing match', match_id, 'from', user_id, 'table resp:', response)
-
-
+@CORS
 def lambda_handler(event, _):
     print(event)
 
     user_id = event['user_id']
     match_id = event['match_id']
 
-    if not user_exists(user_id):
-        return {'statusCode': 404}
+    try:
+        if not users.user_exists(user_id):
+            return {'statusCode': 404}
 
-    remove_from_matches_list(user_id, match_id)
-    remove_from_matches_list(match_id, user_id)
+        # not currently matched case
+        # TODO: should this return 200?
+        # TODO: if so, should we handle match_id isn't a valid user case?
+        matches = users.get_matches(user_id)
+        if not match_id in matches:
+            return {'statusCode': 404}
 
-    # Put a rejection decision
-    table_name = 'decisions'
-    response = dynamodb.update_item(
-        TableName=table_name,
-        Key={'user_id': {'S': user_id}, 'candidate_id': {'S': match_id}},
-        UpdateExpression='SET liked = :liked',
-        ExpressionAttributeValues={':liked': {'BOOL': False}}
-    )
-    print('resp from put to decisions:', response)
+        users.remove_match(user_id, match_id)
+        decisions.put_decision(user_id, match_id, False)
 
-    return {'statusCode': 200}
+        return {'statusCode': 200}
+
+    except ClientError as e:
+        print(e)
+        return {'statusCode': 500}

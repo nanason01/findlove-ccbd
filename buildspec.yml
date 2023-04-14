@@ -15,16 +15,39 @@ phases:
     commands:
       - echo "Deploying Lambdas..."
       - cd lambdas
-      - |
-        for lambda in ./*/; do
-          if [[ -d "$lambda" ]]; then
-            cd $lambda
-            zip ${lambda}.zip *
-            if aws lambda update-function-code --function-name $lambda --zip-file fileb://${lambda}.zip; then
-              echo "Successfully deployed ${lambda}"
-            else
-              echo "Failed to deploy ${lambda}"
-            fi
-          fi
-        done
-      - cd ..
+      - echo "Deploying create_user..."
+      - cd create_user
+      - cp -r ../common .
+      - zip -r create_user.zip *
+      - aws lambda update-function-code --function-name create_user --zip-file fileb://create_user.zip
+      - echo "Deploying decide_match..."
+      - cd ../decide_match
+      - cp -r ../common .
+      - zip -r decide_match.zip *
+      - aws lambda update-function-code --function-name decide_match --zip-file fileb://decide_match.zip
+      - echo "Deploying delete_user..."
+      - cd ../delete_user
+      - cp -r ../common .
+      - zip -r delete_user.zip *
+      - aws lambda update-function-code --function-name delete_user --zip-file fileb://delete_user.zip
+      - echo "Deploying edit_user..."
+      - cd ../edit_user
+      - cp -r ../common .
+      - zip -r edit_user.zip *
+      - aws lambda update-function-code --function-name edit_user --zip-file fileb://edit_user.zip
+      - echo "Deploying get_candidates..."
+      - cd ../get_candidates
+      - cp -r ../common .
+      - zip -r get_candidates.zip *
+      - aws lambda update-function-code --function-name get_candidates --zip-file fileb://get_candidates.zip
+      - echo "Deploying get_match..."
+      - cd ../get_match
+      - cp -r ../common .
+      - zip -r get_match.zip *
+      - aws lambda update-function-code --function-name get_match --zip-file fileb://get_match.zip
+      - echo "Deploying unmatch..."
+      - cd unmatch
+      - cp -r ../common .
+      - zip -r unmatch.zip *
+      - aws lambda update-function-code --function-name unmatch --zip-file fileb://unmatch.zip
+      - echo "Done"

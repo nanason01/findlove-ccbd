@@ -1,14 +1,15 @@
-import boto3
 from botocore.exceptions import ClientError
+import json
 
-table_name = 'decisions'
-dynamodb = boto3.client('dynamodb')
+import common.users
+from common.CORS import CORS
 
 # Expected event format:
 #
 # {
 #     "user_id": "string",
-#     TODO: add more fields, integrate them to query spotify if not coming from frontend
+#     "field": "field_value",
+#     ... (other fields) ...
 # }
 #
 # Expected response format if successful:
@@ -23,39 +24,17 @@ dynamodb = boto3.client('dynamodb')
 # }
 
 
-def user_exists(user_id: str) -> bool:
-    try:
-        table_name = 'users'
-        response = dynamodb.get_item(
-            TableName=table_name,
-            Key={'id': {'S': user_id}},
-            ProjectionExpression='id'
-        )
-        print('user exists resp:', response)
-        return 'Item' in response
-    except Exception as e:
-        print('user exists error:', e)
-        return False
-
-
+@CORS
 def lambda_handler(event, _):
-    print(event)
-
-    if user_exists(event['user_id']):
-        return {'statusCode': 409}
-
-    table_name = 'users'
-    item = {
-        'user_id': {'S': event['user_id']}
-    }
+    user_id = event['pathParameters']['id']
+    fields = json.loads(event['body'])
 
     try:
-        response = dynamodb.put_item(
-            TableName=table_name,
-            Item=item
-        )
-        print(response)
+        if users.user_exists(user_id):
+            return {'statusCode': 409}
+
+        users.create_user(user_id, **fields)
         return {'statusCode': 200}
-    except ClientError as e:
-        print(e)
+
+    except ClientError:
         return {'statusCode': 500}

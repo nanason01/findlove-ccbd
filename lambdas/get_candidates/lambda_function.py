@@ -1,7 +1,14 @@
-import boto3
+from botocore.exceptions import ClientError
 
-table_name = 'users'
-dynamodb = boto3.client('dynamodb')
+import common.users
+import common.decisions
+from common.CORS import CORS
+
+from rank_candidates import get_best_candidate
+
+SAMPLE_SIZE = 10        # cands per sample
+GOOD_SAMPLE_SIZE = 5    # valid cands to stop sampling
+NUM_RETRIES = 3         # resamples before giving up
 
 # Expected event format:
 #
@@ -31,60 +38,40 @@ dynamodb = boto3.client('dynamodb')
 # }
 
 
-def user_exists(user_id: str) -> bool:
-    try:
-        table_name = 'users'
-        response = dynamodb.get_item(
-            TableName=table_name,
-            Key={'id': {'S': user_id}},
-            ProjectionExpression='id'
-        )
-        print('user exists resp:', response)
-        return 'Item' in response
-    except Exception as e:
-        print('user exists error:', e)
-        return False
-
-
+@CORS
 def lambda_handler(event, _):
     print(event)
     user_id = event['user_id']
 
-    if not user_exists(user_id):
-        return {'statusCode': 404}
+    try:
+        if not users.user_exists(user_id):
+            return {'statusCode': 404}
 
-    response = dynamodb.query(
-        TableName=table_name,
-        KeyConditionExpression='user_id = :user_id',
-        ExpressionAttributeValues={':user_id': {'S': user_id}},
-        ProjectionExpression='candidate_id'
-    )
+        candidate_ids = []
+        for _ in range(NUM_RETRIES):
+            sample = users.sample_users(n=SAMPLE_SIZE)
 
-    # Extract the list of candidate_ids from the response
-    already_decided = [item['candidate_id']['S'] for item in response['Items']]
+            candidate_ids += [
+                candidate_id for candidate_id in sample
+                if candidate_id != user_id and
+                not decisions.decision_exists(user_id, candidate_id)
+            ]
 
-    # Query the table for a user not in the exclude_ids set
-    response = dynamodb.query(
-        TableName=table_name,
-        KeyConditionExpression='id > :id',
-        ExpressionAttributeValues={':id': {'S': '0'}},
-        FilterExpression='NOT id IN (:exclude_ids)',
-        ExpressionAttributeValues={':exclude_ids': {'SS': already_decided}},
-        Limit=1,
-        ScanIndexForward=True
-    )
+            if len(candidate_ids) >= GOOD_SAMPLE_SIZE:
+                break
 
-    candidate = response['Item'][0]['id']['S'] if 'Item' in response and len(
-        response['Item']) > 0 else None
+        if not candidate_ids:
+            return {
+                'statusCode': 200,
+                'candidate_found': False
+            }
 
-    if candidate:
         return {
             'statusCode': 200,
             'candidate_found': True,
-            'candidate': candidate
+            'candidate_id': get_best_candidate(user_id, candidate_ids),
         }
-    else:
-        return {
-            'statusCode': 200,
-            'candidate_found': False
-        }
+
+    except ClientError as e:
+        print(e)
+        return {'statusCode': 500}
