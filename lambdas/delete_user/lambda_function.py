@@ -23,7 +23,7 @@ from common.CORS import CORS
 
 @CORS
 def lambda_handler(event, _):
-    user_id = event['user_id']
+    user_id = event['pathParameters']['id']
 
     try:
         if not users.user_exists(user_id):
