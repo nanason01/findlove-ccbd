@@ -135,6 +135,10 @@ def update_user(id: str, **fields):
     if any(field not in valid_fields for field in fields):
         raise Exception('Invalid field in: ' + str(fields))
 
+    if 'dob' in fields:
+        fields['dob'] = int(time.mktime(datetime.strptime(
+            fields['dob'], '%m/%d/%Y').timetuple()))
+
     update_expression = ', '.join([
         f'SET #{field} = :new_{field}'
         for field in fields
