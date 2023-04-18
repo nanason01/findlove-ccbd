@@ -277,20 +277,10 @@ def sample_users(n: int = 10) -> List[str]:
     Returns:
         List[str]: user ids of users found
     """
-    # Get the total number of items in the table
-    total_items = users.item_count
+    response = users.scan(
+        Limit=n,
+        Select='SPECIFIC_ATTRIBUTES',
+        ProjectionExpression='id'
+    )
 
-    # Generate 10 random indices to select items from the table
-    random_indices = random.sample(range(total_items), 10)
-
-    # Retrieve the user IDs for the randomly selected items
-    ids = []
-    for index in random_indices:
-        response = users.scan(
-            ProjectionExpression='id',
-            Limit=1,
-            ExclusiveStartKey={'id': index + 1}
-        )
-        ids.append(response['Items'][0]['id'])
-
-    return ids
+    return [item['id'] for item in response['Items']] if 'Items' in response else []
