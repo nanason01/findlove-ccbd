@@ -29,12 +29,8 @@ def lambda_handler(event, _):
     user_id = event['pathParameters']['id']
     fields = json.loads(event['body'])
 
-    try:
-        if users.user_exists(user_id):
-            return {'statusCode': 409}
+    if users.user_exists(user_id):
+        return {'statusCode': 409}
 
-        users.create_user(user_id, **fields)
-        return {'statusCode': 200}
-
-    except ClientError:
-        return {'statusCode': 500}
+    users.create_user(user_id, **fields)
+    return {'statusCode': 200}

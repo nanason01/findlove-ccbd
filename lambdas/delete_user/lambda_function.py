@@ -25,13 +25,8 @@ from common.CORS import CORS
 def lambda_handler(event, _):
     user_id = event['pathParameters']['id']
 
-    try:
-        if not users.user_exists(user_id):
-            return {'statusCode': 404}
+    if not users.user_exists(user_id):
+        return {'statusCode': 404}
 
-        users.delete_user(user_id)
-        return {'statusCode': 200}
-
-    except ClientError as e:
-        print(e)
-        return {'statusCode': 500}
+    users.delete_user(user_id)
+    return {'statusCode': 200}

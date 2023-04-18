@@ -29,22 +29,17 @@ def lambda_handler(event, _):
     user_id = event['user_id']
     match_id = event['match_id']
 
-    try:
-        if not users.user_exists(user_id):
-            return {'statusCode': 404}
+    if not users.user_exists(user_id):
+        return {'statusCode': 404}
 
-        # not currently matched case
-        # TODO: should this return 200?
-        # TODO: if so, should we handle match_id isn't a valid user case?
-        matches = users.get_matches(user_id)
-        if not match_id in matches:
-            return {'statusCode': 404}
+    # not currently matched case
+    # TODO: should this return 200?
+    # TODO: if so, should we handle match_id isn't a valid user case?
+    matches = users.get_matches(user_id)
+    if not match_id in matches:
+        return {'statusCode': 404}
 
-        users.remove_match(user_id, match_id)
-        decisions.put_decision(user_id, match_id, False)
+    users.remove_match(user_id, match_id)
+    decisions.put_decision(user_id, match_id, False)
 
-        return {'statusCode': 200}
-
-    except ClientError as e:
-        print(e)
-        return {'statusCode': 500}
+    return {'statusCode': 200}

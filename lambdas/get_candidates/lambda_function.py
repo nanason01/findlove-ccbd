@@ -42,35 +42,30 @@ def lambda_handler(event, _):
     print(event)
     user_id = event['user_id']
 
-    try:
-        if not users.user_exists(user_id):
-            return {'statusCode': 404}
+    if not users.user_exists(user_id):
+        return {'statusCode': 404}
 
-        candidate_ids = []
-        for _ in range(NUM_RETRIES):
-            sample = users.sample_users(n=SAMPLE_SIZE)
+    candidate_ids = []
+    for _ in range(NUM_RETRIES):
+        sample = users.sample_users(n=SAMPLE_SIZE)
 
-            candidate_ids += [
-                candidate_id for candidate_id in sample
-                if candidate_id != user_id and
-                not decisions.decision_exists(user_id, candidate_id)
-            ]
+        candidate_ids += [
+            candidate_id for candidate_id in sample
+            if candidate_id != user_id and
+            not decisions.decision_exists(user_id, candidate_id)
+        ]
 
-            if len(candidate_ids) >= GOOD_SAMPLE_SIZE:
-                break
+        if len(candidate_ids) >= GOOD_SAMPLE_SIZE:
+            break
 
-        if not candidate_ids:
-            return {
-                'statusCode': 200,
-                'candidate_found': False
-            }
-
+    if not candidate_ids:
         return {
             'statusCode': 200,
-            'candidate_found': True,
-            'candidate_id': get_best_candidate(user_id, candidate_ids),
+            'candidate_found': False
         }
 
-    except ClientError as e:
-        print(e)
-        return {'statusCode': 500}
+    return {
+        'statusCode': 200,
+        'candidate_found': True,
+        'candidate_id': get_best_candidate(user_id, candidate_ids),
+    }

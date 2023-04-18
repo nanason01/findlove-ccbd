@@ -27,15 +27,10 @@ def lambda_handler(event, _):
     print(event)
     user_id = event['user_id']
 
-    try:
-        if not users.user_exists(user_id):
-            return {'statusCode': 404}
+    if not users.user_exists(user_id):
+        return {'statusCode': 404}
 
-        return {
-            'statusCode': 200,
-            'matches': users.get_matches(user_id),
-        }
-
-    except ClientError as e:
-        print(e)
-        return {'statusCode': 500}
+    return {
+        'statusCode': 200,
+        'matches': users.get_matches(user_id),
+    }
