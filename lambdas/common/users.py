@@ -12,6 +12,20 @@ dynamodb = boto3.resource('dynamodb')
 users = dynamodb.Table(table_name)
 
 
+valid_fields = {
+    'first_name',
+    'last_name',
+    'email',
+    'dob',
+    'phone',
+    'gender',
+    'orientation',
+    'top_artists',
+    'top_tracks',
+    'image_url'
+}
+
+
 def user_exists(id: str) -> bool:
     """Returns whether user exists
 
@@ -54,7 +68,6 @@ def get_user(id: str):
     return response['Items'][0]
 
 
-# TODO: add location, spotify data to create, update
 def create_user(
     id: str,
     first_name: str,
@@ -63,7 +76,10 @@ def create_user(
     dob: str,
     phone: str,
     gender: str,
-    orientation: List[str]
+    orientation: List[str],
+    top_artists,
+    top_tracks,
+    image_url: str
 ):
     """Update a user item with these characteristics
 
@@ -78,6 +94,9 @@ def create_user(
         phone (str)
         gender (str)
         orientation (List[str])
+        top_artists
+        top_tracks
+        image_url (str)
 
     Raises:
         ClientError: dynamoDB failure
@@ -92,21 +111,13 @@ def create_user(
         'dob': unix_dob,
         'phone': phone,
         'gender': gender,
-        'orientation': orientation
+        'orientation': orientation,
+        'top_artists': top_artists,
+        'top_tracks': top_tracks,
+        'image_url': image_url
     }
 
     users.put_item(Item=item)
-
-
-valid_fields = {
-    'first_name',
-    'last_name',
-    'email',
-    'dob',
-    'phone',
-    'gender',
-    'orientation',
-}
 
 
 def update_user(id: str, **fields):
