@@ -46,7 +46,7 @@ phases:
       - zip -r get_match.zip *
       - aws lambda update-function-code --function-name get_match --zip-file fileb://get_match.zip
       - echo "Deploying unmatch..."
-      - cd unmatch
+      - cd ../unmatch
       - cp -r ../common .
       - zip -r unmatch.zip *
       - aws lambda update-function-code --function-name unmatch --zip-file fileb://unmatch.zip
