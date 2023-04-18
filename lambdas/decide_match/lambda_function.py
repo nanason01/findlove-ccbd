@@ -45,7 +45,7 @@ def lambda_handler(event, _):
                 raise Exception(
                     "decide match doesn't let you change your mind")
 
-            is_match = liked and counter_status == decisions.DecisionStatus.Liked:
+            is_match = liked and counter_status == decisions.DecisionStatus.Liked
             return {'statusCode': 200, 'isMatch': is_match}
 
         decisions.put_decision(user_id, candidate_id, liked)
