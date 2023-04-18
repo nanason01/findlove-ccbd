@@ -182,10 +182,10 @@ def get_matches(id: str) -> List[str]:
         ClientError: dynamoDB failure
     """
     response = users.get_item(
-        Key={'id': {'S': id}},
+        Key={'id': id},
         ProjectionExpression='matches'
     )
-    return response['Item']['matches']['SS'] if 'matches' in response['Item'] else []
+    return response['Item']['matches'] if 'matches' in response['Item'] else []
 
 
 def add_match(user_1: str, user_2: str):
@@ -212,12 +212,12 @@ def add_match(user_1: str, user_2: str):
     users.update_item(
         Key={'id': user_1},
         UpdateExpression='SET matches = :matches',
-        ExpressionAttributeValues={':matches': {'SS': user_1_matches}}
+        ExpressionAttributeValues={':matches': user_1_matches}
     )
     users.update_item(
         Key={'id': user_2},
         UpdateExpression='SET matches = :matches',
-        ExpressionAttributeValues={':matches': {'SS': user_2_matches}}
+        ExpressionAttributeValues={':matches': user_2_matches}
     )
 
 
@@ -244,7 +244,7 @@ def remove_match_one_side(id: str, match_id: str):
         users.update_item(
             Key={'id': id},
             UpdateExpression='SET matches = :matches',
-            ExpressionAttributeValues={':matches': {'SS': matches}}
+            ExpressionAttributeValues={':matches': matches}
         )
     else:
         users.update_item(

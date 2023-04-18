@@ -7,7 +7,7 @@ import time
 import enum
 
 table_name = 'decisions'
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.resource('dynamodb')
 decisions = dynamodb.Table(table_name)
 
 
