@@ -8,34 +8,34 @@ import time
 
 
 table_name = 'users'
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.resource('dynamodb')
 users = dynamodb.Table(table_name)
 
 
-def user_exists(user_id: str) -> bool:
+def user_exists(id: str) -> bool:
     """Returns whether user exists
 
     Args:
-        user_id (str): user_id to check for
+        id (str): id to check for
 
     Returns:
-        bool: True iff user_id in users
+        bool: True iff id in users
 
     Raises:
         ClientError: dynamoDB failure
     """
     response = users.query(
-        KeyConditionExpression=Key('user_id').eq(user_id)
+        KeyConditionExpression=Key('id').eq(id)
     )
 
     return len(response['Items']) > 0
 
 
-def get_user(user_id: str):
+def get_user(id: str):
     """_summary_
 
     Args:
-        user_id (str): user id to get
+        id (str): user id to get
 
     Raises:
         Exception: user does not exist
@@ -45,18 +45,18 @@ def get_user(user_id: str):
         user object
     """
     response = users.query(
-        KeyConditionExpression=Key('user_id').eq(user_id)
+        KeyConditionExpression=Key('id').eq(id)
     )
 
     if len(response['Items']) == 0:
-        raise Exception(f'Get user error: {user_id} does not exist')
+        raise Exception(f'Get user error: {id} does not exist')
 
     return response['Items'][0]
 
 
 # TODO: add location, spotify data to create, update
 def create_user(
-    user_id: str,
+    id: str,
     first_name: str,
     last_name: str,
     email: str,
@@ -67,10 +67,10 @@ def create_user(
 ):
     """Update a user item with these characteristics
 
-    Requires user_id or dict (with user id)
+    Requires id or dict (with user id)
 
     Args:
-        user_id (str)
+        id (str)
         first_name (str)
         last_name (str)
         email (str)
@@ -82,10 +82,10 @@ def create_user(
     Raises:
         ClientError: dynamoDB failure
     """
-    unix_dob = int(time.mktime(datetime.strptime(dob, '%m/%d/%Y')))
+    unix_dob = int(time.mktime(datetime.strptime(dob, '%m/%d/%Y').timetuple()))
 
     item = {
-        'user_id': user_id,
+        'id': id,
         'first_name': first_name,
         'last_name': last_name,
         'email': email,
@@ -109,13 +109,13 @@ valid_fields = {
 }
 
 
-def update_user(user_id: str, **fields):
-    """Update fields given for user_id
+def update_user(id: str, **fields):
+    """Update fields given for id
 
     See valid_fields for valid kwarg keys
 
     Args:
-        user_id (str): user_id to update on
+        id (str): id to update on
 
     Raises:
         ClientError: dynamoDB failure
@@ -139,41 +139,41 @@ def update_user(user_id: str, **fields):
     }
 
     users.update_item(
-        Key={'user_id': user_id},
+        Key={'id': id},
         UpdateExpression=update_expression,
         ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_attribute_values
     )
 
 
-def delete_user(user_id: str):
+def delete_user(id: str):
     """Deletes a user from the users table
 
     Note: does NOT check whether user actually existed
 
     Args:
-        user_id (str): user id to delete
+        id (str): user id to delete
 
     Raises:
         ClientError: dynamoDB failure
     """
-    matches = get_matches(user_id)
+    matches = get_matches(id)
 
     for match in matches:
-        remove_match_one_side(match, user_id)
+        remove_match_one_side(match, id)
 
     users.delete_item(
-        Key={'user_id': user_id}
+        Key={'id': id}
     )
 
 
-def get_matches(user_id: str) -> List[str]:
+def get_matches(id: str) -> List[str]:
     """Get matches for user
 
     Returns [] if error encountered
 
     Args:
-        user_id (str): user id to get matches for
+        id (str): user id to get matches for
 
     Returns:
         List[str]: list of ids that user is matched to
@@ -182,7 +182,7 @@ def get_matches(user_id: str) -> List[str]:
         ClientError: dynamoDB failure
     """
     response = users.get_item(
-        Key={'id': {'S': user_id}},
+        Key={'id': {'S': id}},
         ProjectionExpression='matches'
     )
     return response['Item']['matches']['SS'] if 'matches' in response['Item'] else []
@@ -221,34 +221,34 @@ def add_match(user_1: str, user_2: str):
     )
 
 
-def remove_match_one_side(user_id: str, match_id: str):
-    """Remove match_id from user_id's matches list
+def remove_match_one_side(id: str, match_id: str):
+    """Remove match_id from id's matches list
 
     Args:
-        user_id (str): user id to edit matches for
+        id (str): user id to edit matches for
         match_id (str): user id to remove
 
     Raises:
         Exception: users not currently matched
         ClientError: dynamoDB failure
     """
-    matches = get_matches(user_id)
+    matches = get_matches(id)
 
     if match_id not in matches:
         raise Exception(
-            f"remove match error: {user_id} not currently matched with {match_id}")
+            f"remove match error: {id} not currently matched with {match_id}")
 
     matches.remove(match_id)
 
     if matches:
         users.update_item(
-            Key={'id': user_id},
+            Key={'id': id},
             UpdateExpression='SET matches = :matches',
             ExpressionAttributeValues={':matches': {'SS': matches}}
         )
     else:
         users.update_item(
-            Key={'id': user_id},
+            Key={'id': id},
             UpdateExpression='REMOVE matches'
         )
 
@@ -284,13 +284,13 @@ def sample_users(n: int = 10) -> List[str]:
     random_indices = random.sample(range(total_items), 10)
 
     # Retrieve the user IDs for the randomly selected items
-    user_ids = []
+    ids = []
     for index in random_indices:
         response = users.scan(
-            ProjectionExpression='user_id',
+            ProjectionExpression='id',
             Limit=1,
             ExclusiveStartKey={'id': index + 1}
         )
-        user_ids.append(response['Items'][0]['user_id'])
+        ids.append(response['Items'][0]['id'])
 
-    return user_ids
+    return ids
