@@ -185,7 +185,7 @@ def get_matches(id: str) -> List[str]:
         Key={'id': id},
         ProjectionExpression='matches'
     )
-    return response['Item']['matches'] if 'matches' in response['Item'] else []
+    return list(response['Item']['matches']) if 'matches' in response['Item'] else []
 
 
 def add_match(user_1: str, user_2: str):
