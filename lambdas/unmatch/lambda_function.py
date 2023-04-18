@@ -1,6 +1,6 @@
 from botocore.exceptions import ClientError
 
-import common.decisions
+from common import users, decisions
 from common.CORS import CORS
 
 # Expected event format:
