@@ -20,8 +20,9 @@ NUM_RETRIES = 3         # resamples before giving up
 #
 # {
 #     "statusCode": 200,
-#     "candidate_found": True
-#     "candidate_id": "string"
+#     "candidate_found": True,
+#     "candidate_id": "string",
+#     "reason": "string"
 # }
 #
 # Response format if no eligible candidates:
@@ -68,10 +69,13 @@ def lambda_handler(event, _):
             })
         }
 
+    candidate_id, reason = get_best_candidate(user_id, candidate_ids)
+
     return {
         'statusCode': 200,
         'body': json.dumps({
             'candidate_found': True,
-            'candidate_id': get_best_candidate(user_id, candidate_ids),
+            'candidate_id': candidate_id,
+            'reason': reason
         })
     }
