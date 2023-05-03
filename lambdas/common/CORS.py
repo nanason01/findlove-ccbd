@@ -1,9 +1,11 @@
 CORS_headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': True,
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': '*',
+    'headers': {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': True,
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': '*',
+    }
 }
 
 
