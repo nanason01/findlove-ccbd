@@ -2,6 +2,7 @@ from botocore.exceptions import ClientError
 
 from common import users, decisions
 from common.CORS import CORS
+import json
 
 from rank_candidates import get_best_candidate
 
@@ -40,9 +41,10 @@ NUM_RETRIES = 3         # resamples before giving up
 @CORS
 def lambda_handler(event, _):
     print(event)
-    user_id = event['user_id']
+    user_id = event['queryStringParameters']['id']
 
     if not users.user_exists(user_id):
+        print("If user not exists stmt")
         return {'statusCode': 404}
 
     candidate_ids = []
@@ -61,11 +63,15 @@ def lambda_handler(event, _):
     if not candidate_ids:
         return {
             'statusCode': 200,
-            'candidate_found': False
+            'body': json.dumps({
+                'candidate_found': False,
+            })
         }
 
     return {
         'statusCode': 200,
-        'candidate_found': True,
-        'candidate_id': get_best_candidate(user_id, candidate_ids),
+        'body': json.dumps({
+            'candidate_found': True,
+            'candidate_id': get_best_candidate(user_id, candidate_ids),
+        })
     }
