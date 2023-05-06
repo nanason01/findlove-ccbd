@@ -1,5 +1,5 @@
 from typing import List, Tuple
-
+from common import users
 import random  # TODO: probably not this
 
 
@@ -14,5 +14,16 @@ def get_best_candidate(user_id: str, candidate_ids: List[str]) -> Tuple[str, str
         Tuple[str, str]: id of the best candidate for user_id in candidate_ids,
             reason for matching them to display to the user
     """
-    # TODO @Swati
+    
+    user = users.get_user(user_id)
+    all_users = users.get_all_users()
+    
+    print(user)
+    # print(users.get_all_users())
+    all_users.remove(user)
+    
+    
+    print("After deletion")
+    print(all_users)
+    
     return random.choice(candidate_ids), 'you were matched for absolutely no reason'
