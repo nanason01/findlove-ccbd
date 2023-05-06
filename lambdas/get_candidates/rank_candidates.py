@@ -3,8 +3,8 @@ from common import users
 import random  # TODO: probably not this
 import nltk
 import string
-from nltk.text import TextCollection
-from nltk.metrics.distance import cosine_similarity
+import math
+from collections import Counter
 
 
 def get_best_candidate(user_id: str, candidate_ids: List[str]) -> Tuple[str, str]:
