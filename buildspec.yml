@@ -38,8 +38,9 @@ phases:
       - echo "Deploying get_candidates..."
       - cd ../get_candidates
       - cp -r ../common .
-      - pip install --upgrade --target ./package numpy
-      - pip install --upgrade --target ./package pandas
+      - pip install --target ./package numpy --upgrade 
+      # - pip install pandas==<version> numpy==<version>
+      - pip install --target ./package pandas --upgrade
       # - pip install --upgrade --target ./package pandas
       - pip install --target ./package sklearn
       - cd package
