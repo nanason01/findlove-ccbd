@@ -1,9 +1,10 @@
 from typing import List, Tuple
 from common import users
 import random  # TODO: probably not this
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+import nltk
+import string
+from nltk.text import TextCollection
+from nltk.metrics.distance import cosine_similarity
 
 
 def get_best_candidate(user_id: str, candidate_ids: List[str]) -> Tuple[str, str]:
