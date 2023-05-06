@@ -66,6 +66,26 @@ def get_user(id: str):
         raise Exception(f'Get user error: {id} does not exist')
 
     return response['Items'][0]
+    
+def get_all_users():
+    """_summary_
+
+    Args:
+        
+
+    Raises:
+        Exception: No users
+        ClientError: dynamoDB failure
+
+    Returns:
+        all user objects
+    """
+    response = users.scan()
+
+    if len(response['Items']) == 0:
+        raise Exception(f'No users')
+
+    return response['Items']
 
 
 def create_user(
