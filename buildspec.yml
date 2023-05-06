@@ -43,7 +43,9 @@ phases:
       - cd package
       - zip -r ../get_candidates.zip .
       - cd ..
-      - zip -r get_candidates.zip *
+      - zip get_candidates.zip lambda_function.py
+      - zip get_candidates.zip rank_candidates.py
+      # - zip -r get_candidates.zip *
       - aws lambda update-function-code --function-name get_candidates --zip-file fileb://get_candidates.zip
       - echo "Deploying get_match..."
       - cd ../get_match
