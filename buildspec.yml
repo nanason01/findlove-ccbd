@@ -42,7 +42,7 @@ phases:
       # - pip install pandas==<version> numpy==<version>
       # - pip install --target ./package pandas --upgrade
       # - pip install --upgrade --target ./package pandas
-      - pip install --target ./package sklearn-pandas --upgrade
+      - pip install --target ./package sklearn
       - cd package
       - zip -r ../get_candidates.zip .
       - cd ..
@@ -50,7 +50,7 @@ phases:
       - zip get_candidates.zip rank_candidates.py
       - zip -r get_candidates.zip common/
       # - zip -r get_candidates.zip *
-      # - aws lambda update-function-code --function-name get_candidates --zip-file fileb://get_candidates.zip
+      - aws lambda update-function-code --function-name get_candidates --zip-file fileb://get_candidates.zip
       - echo "Deploying get_match..."
       - cd ../get_match
       - cp -r ../common .
