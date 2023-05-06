@@ -42,7 +42,8 @@ phases:
       # - pip install pandas==<version> numpy==<version>
       # - pip install --target ./package pandas --upgrade
       # - pip install --upgrade --target ./package pandas
-      - pip install --target ./package sklearn
+      # - pip install --target ./package sklearn
+      - pip install --target ./package scikit-learn
       - cd package
       - zip -r ../get_candidates.zip .
       - cd ..
