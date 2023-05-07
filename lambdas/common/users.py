@@ -58,20 +58,28 @@ def get_user(id: str):
     Returns:
         user object
     """
-    response = users.query(
-        KeyConditionExpression=Key('id').eq(id)
-    )
-
-    if len(response['Items']) == 0:
-        raise Exception(f'Get user error: {id} does not exist')
-
-    return response['Items'][0]
+    try:
+        print("In get user func")
+        response = users.query(
+            KeyConditionExpression=Key('id').eq(id)
+        )
     
+        print("Before get users exception check")
+        if len(response['Items']) == 0:
+            raise Exception(f'Get user error: {id} does not exist')
+    
+        print(response)
+        print("Before returning from get users")
+        return response['Items'][0]
+    except Exception as e:
+        print(e)
+
+
 def get_all_users():
     """_summary_
 
     Args:
-        
+
 
     Raises:
         Exception: No users
@@ -86,12 +94,13 @@ def get_all_users():
         raise Exception(f'No users')
 
     return response['Items']
-    
+
+
 def get_users_by_ids(candidate_ids: List[str]):
     """_summary_
 
     Args:
-        
+
 
     Raises:
         Exception: No users

@@ -28,11 +28,15 @@ from common.CORS import CORS
 @CORS
 def lambda_handler(event, _):
     user_id = event['pathParameters']['id']
-
+    print("In get_profile")
     if not users.user_exists(user_id):
+        print("In user doesn't exit call")
         return {'statusCode': 404}
-
+    
+    print("Get user called")
+    user = users.get_user(user_id)
+    print(user)
     return {
         'statusCode': 200,
-        'user': users.get_user(user_id)
+        'body': json.dumps(str(user))
     }

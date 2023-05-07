@@ -50,8 +50,15 @@ phases:
       - cp -r ../common .
       - zip -r unmatch.zip *
       - aws lambda update-function-code --function-name unmatch --zip-file fileb://unmatch.zip
+
       - cd ../get_profile
       - cp -r ../common .
-      - zip -r get_profile.zip *
+      - pip install --target ./package simplejson
+      - cd package
+      - zip -r ../get_profile.zip .
+      - cd ..
+      - zip get_profile.zip lambda_function.py
+      - zip -r get_profile.zip common/
+      # - zip -r get_profile.zip *
       - aws lambda update-function-code --function-name get_profile --zip-file fileb://get_profile.zip
       - echo "Done"
