@@ -1,4 +1,5 @@
 from botocore.exceptions import ClientError
+from typing import List, Set
 
 from common import users, decisions
 from common.CORS import CORS
@@ -83,6 +84,14 @@ PREFERENCE_TO_GENDER = {
 }
 
 
+def get_prefs(gender: str, orientations: List[str]) -> Set[str]:
+    return {
+        pref
+        for orientation in orientations
+        for pref in PREFERENCE_TO_GENDER[orientation][gender]
+    }
+
+
 @CORS
 def lambda_handler(event, _):
     print(event)
@@ -94,23 +103,22 @@ def lambda_handler(event, _):
 
     user = users.get_user(user_id)
     user_gender = user['gender']
-    user_preferences = user['preference']
+    user_orientations = user['orientation']
 
-    gender_filter = {
-        PREFERENCE_TO_GENDER[pref][user_gender]
-        for user_pref in user_preferences for pref in user_pref
-    }
+    gender_filter = get_prefs(user_gender, user_orientations)
 
-    candidate_ids = []
+    candidate_ids = set()
     for _ in range(NUM_RETRIES):
         sample = users.sample_users(n=SAMPLE_SIZE)
 
-        candidate_ids += [
+        candidate_ids = candidate_ids.union(
             candidate['id'] for candidate in sample
             if candidate['id'] != user_id and
             not decisions.decision_exists(user_id, candidate['id']) and
-            candidate['gender'] in gender_filter
-        ]
+            candidate.get('gender', 'O') in gender_filter and
+            user_gender in get_prefs(candidate.get(
+                'gender', 'O'), candidate['orientation'])
+        )
 
         if len(candidate_ids) >= GOOD_SAMPLE_SIZE:
             break
