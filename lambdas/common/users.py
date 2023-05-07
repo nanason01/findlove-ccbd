@@ -58,21 +58,14 @@ def get_user(id: str):
     Returns:
         user object
     """
-    try:
-        print("In get user func")
-        response = users.query(
-            KeyConditionExpression=Key('id').eq(id)
-        )
-    
-        print("Before get users exception check")
-        if len(response['Items']) == 0:
-            raise Exception(f'Get user error: {id} does not exist')
-    
-        print(response)
-        print("Before returning from get users")
-        return response['Items'][0]
-    except Exception as e:
-        print(e)
+    response = users.query(
+        KeyConditionExpression=Key('id').eq(id)
+    )
+
+    if len(response['Items']) == 0:
+        raise Exception(f'Get user error: {id} does not exist')
+
+    return response['Items'][0]
 
 
 def get_all_users():
@@ -353,9 +346,7 @@ def sample_users(n: int = 10) -> List[str]:
         List[str]: user ids of users found
     """
     response = users.scan(
-        Limit=n,
-        Select='SPECIFIC_ATTRIBUTES',
-        ProjectionExpression='id'
+        Limit=n
     )
 
-    return [item['id'] for item in response['Items']] if 'Items' in response else []
+    return response['Items'] if 'Items' in response else []
