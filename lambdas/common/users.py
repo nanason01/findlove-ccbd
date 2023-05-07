@@ -86,6 +86,37 @@ def get_all_users():
         raise Exception(f'No users')
 
     return response['Items']
+    
+def get_users_by_ids(candidate_ids: List[str]):
+    """_summary_
+
+    Args:
+        
+
+    Raises:
+        Exception: No users
+        ClientError: dynamoDB failure
+
+    Returns:
+        all user objects
+    """
+    # user_ids = ['id1', 'id2', 'id3']
+    keys = [{'id': user_id} for user_id in candidate_ids]
+    params = {
+        'RequestItems': {
+            'users': {
+                'Keys': keys
+            }
+        }
+    }
+    response = dynamodb.batch_get_item(**params)
+    # response = users.scan()
+    print(response)
+
+    if len(response['Responses']['users']) == 0:
+        raise Exception(f'No users')
+
+    return response['Responses']['users']
 
 
 def create_user(
