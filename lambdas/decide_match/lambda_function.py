@@ -1,7 +1,12 @@
+import boto3
 from botocore.exceptions import ClientError
+import random
 
 from common import users, decisions
 from common.CORS import CORS
+
+ses = boto3.client('ses')
+SOURCE_EMAIL = "findlove6998@gmail.com"
 
 # Expected event format:
 #
@@ -17,6 +22,38 @@ from common.CORS import CORS
 #     "statusCode": 200
 #     "isMatch": "bool"
 # }
+
+
+def notify_match(candidate_id, user_id):
+    candidate = users.get_user(candidate_id)
+    user = users.get_user(user_id)
+
+    subject = random.choice([
+        "You're about to catch a groove",
+        "The beat's picking up",
+        "It's about to get more funky",
+    ])
+
+    body = f"You just matched with {user['first_name']}, play it cool by messaging them right away!"
+
+    ses.send_email(
+        Source=SOURCE_EMAIL,
+        Destination={
+            'ToAddresses': [candidate['email']],
+        },
+        Message={
+            'Body': {
+                'Text': {
+                    'Charset': 'utf-8',
+                    'Data': body,
+                },
+            },
+            'Subject': {
+                'Charset': 'utf-8',
+                'Data': subject,
+            },
+        },
+    )
 
 
 @CORS
@@ -53,5 +90,6 @@ def lambda_handler(event, _):
 
     if is_match:
         users.add_match(user_id, candidate_id)
+        notify_match(candidate_id, user_id)
 
     return {'statusCode': 200, 'isMatch': is_match}
