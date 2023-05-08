@@ -3,6 +3,8 @@ from botocore.exceptions import ClientError
 from common import users
 from common.CORS import CORS
 
+import json
+
 # Expected event format:
 #
 # {
@@ -25,12 +27,12 @@ from common.CORS import CORS
 @CORS
 def lambda_handler(event, _):
     print(event)
-    user_id = event['user_id']
+    user_id = event['pathParameters']['id']
 
     if not users.user_exists(user_id):
         return {'statusCode': 404}
 
     return {
         'statusCode': 200,
-        'matches': users.get_matches(user_id),
+        'body': json.dumps({'matches': users.get_matches(user_id)})
     }
