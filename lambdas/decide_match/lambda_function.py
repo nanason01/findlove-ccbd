@@ -38,24 +38,27 @@ def notify_match(candidate_id, user_id):
 
     body = f"You just matched with {user['first_name']}, play it cool by messaging them right away!"
 
-    ses.send_email(
-        Source=SOURCE_EMAIL,
-        Destination={
-            'ToAddresses': [candidate['email']],
-        },
-        Message={
-            'Body': {
-                'Text': {
+    try:
+        ses.send_email(
+            Source=SOURCE_EMAIL,
+            Destination={
+                'ToAddresses': [candidate['email']],
+            },
+            Message={
+                'Body': {
+                    'Text': {
+                        'Charset': 'utf-8',
+                        'Data': body,
+                    },
+                },
+                'Subject': {
                     'Charset': 'utf-8',
-                    'Data': body,
+                    'Data': subject,
                 },
             },
-            'Subject': {
-                'Charset': 'utf-8',
-                'Data': subject,
-            },
-        },
-    )
+        )
+    except Exception:
+        print('unable to notify match counterparty')
 
 
 @CORS
