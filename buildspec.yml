@@ -61,4 +61,15 @@ phases:
       - zip -r get_profile.zip common/
       # - zip -r get_profile.zip *
       - aws lambda update-function-code --function-name get_profile --zip-file fileb://get_profile.zip
+
+      - cd ../get_profiles
+      - cp -r ../common .
+      - pip install --target ./package simplejson
+      - cd package
+      - zip -r ../get_profiles.zip .
+      - cd ..
+      - zip get_profiles.zip lambda_function.py
+      - zip -r get_profiles.zip common/
+      # - zip -r get_profile.zip *
+      - aws lambda update-function-code --function-name get_profiles --zip-file fileb://get_profiles.zip
       - echo "Done"
