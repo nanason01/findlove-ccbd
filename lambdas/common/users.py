@@ -348,7 +348,7 @@ def sample_users(n: int = 10) -> List[str]:
     """
     response = users.scan(
         Limit=n,
-        ProjectionExpression='id'
+        ProjectionExpression='id,gender,orientation'
     )
 
     return response['Items'] if 'Items' in response else []
