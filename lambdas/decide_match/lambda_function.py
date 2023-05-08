@@ -66,7 +66,7 @@ def lambda_handler(event, _):
     # TODO: fixup these
     user_id = event['queryStringParameters']['id']
     candidate_id = event['queryStringParameters']['candidateId']
-    liked = event['queryStringParameters']['isMatch']
+    liked = event['queryStringParameters']['isMatch'] == 'true'
 
     if not users.user_exists(user_id):
         print(f"User {user_id} does not exist")
