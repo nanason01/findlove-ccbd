@@ -1,3 +1,5 @@
+import json
+
 import boto3
 from botocore.exceptions import ClientError
 import random
@@ -59,9 +61,9 @@ def notify_match(candidate_id, user_id):
 @CORS
 def lambda_handler(event, _):
     # TODO: fixup these
-    user_id = event['user_id']
-    candidate_id = event['candidate_id']
-    liked = event['liked']
+    user_id = event['queryStringParameters']['id']
+    candidate_id = event['queryStringParameters']['candidateId']
+    liked = event['queryStringParameters']['isMatch']
 
     if not users.user_exists(user_id):
         print(f"User {user_id} does not exist")
@@ -82,7 +84,7 @@ def lambda_handler(event, _):
                 "decide match doesn't let you change your mind")
 
         is_match = liked and counter_status == decisions.DecisionStatus.Liked
-        return {'statusCode': 200, 'isMatch': is_match}
+        return {'statusCode': 200, 'body': json.dumps({'isMatch': is_match})}
 
     decisions.put_decision(user_id, candidate_id, liked)
 
@@ -92,4 +94,4 @@ def lambda_handler(event, _):
         users.add_match(user_id, candidate_id)
         notify_match(candidate_id, user_id)
 
-    return {'statusCode': 200, 'isMatch': is_match}
+    return {'statusCode': 200, 'body': json.dumps({'isMatch': is_match})}

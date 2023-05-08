@@ -26,8 +26,8 @@ from common.CORS import CORS
 def lambda_handler(event, _):
     print(event)
 
-    user_id = event['user_id']
-    match_id = event['match_id']
+    user_id = event['pathParameters']['id']
+    match_id = event['queryStringParameters']['unmatchedId']
 
     if not users.user_exists(user_id):
         return {'statusCode': 404}
@@ -36,7 +36,7 @@ def lambda_handler(event, _):
     # TODO: should this return 200?
     # TODO: if so, should we handle match_id isn't a valid user case?
     matches = users.get_matches(user_id)
-    if not match_id in matches:
+    if match_id not in matches:
         return {'statusCode': 404}
 
     users.remove_match(user_id, match_id)
