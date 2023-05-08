@@ -90,7 +90,7 @@ def get_all_users():
     return response['Items']
 
 
-def get_users_by_ids(candidate_ids: List[str]):
+def get_users_by_ids(candidate_ids: str):
     """_summary_
 
     Args:
@@ -104,7 +104,11 @@ def get_users_by_ids(candidate_ids: List[str]):
         all user objects
     """
     # user_ids = ['id1', 'id2', 'id3']
+    candidate_ids = candidate_ids.split(',')
+    # candidate_ids = candidate_ids.strip('][').split(', ')
+    print(candidate_ids)
     keys = [{'id': user_id} for user_id in candidate_ids]
+    print(keys)
     params = {
         'RequestItems': {
             'users': {
