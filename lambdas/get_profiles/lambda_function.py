@@ -27,14 +27,16 @@ from common.CORS import CORS
 
 @CORS
 def lambda_handler(event, _):
-    user_ids = event['queryStringParameters']['ids']
-    
+    user_ids_str = event['queryStringParameters']['ids']
+    user_ids = user_ids_str.split(',')
+
     print("In get_profiles")
     # if not users.user_exists(user_id):
     #     print("In user doesn't exit call")
     #     return {'statusCode': 404}
-    # 
+    #
     print("Get user called")
+
     user_objs = users.get_users_by_ids(user_ids)
     print(user_objs)
     return {
