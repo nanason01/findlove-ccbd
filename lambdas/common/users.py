@@ -39,7 +39,8 @@ def user_exists(id: str) -> bool:
         ClientError: dynamoDB failure
     """
     response = users.query(
-        KeyConditionExpression=Key('id').eq(id)
+        KeyConditionExpression=Key('id').eq(id),
+        ProjectionExpression='id'
     )
 
     return len(response['Items']) > 0
@@ -346,7 +347,8 @@ def sample_users(n: int = 10) -> List[str]:
         List[str]: user ids of users found
     """
     response = users.scan(
-        Limit=n
+        Limit=n,
+        ProjectionExpression='id'
     )
 
     return response['Items'] if 'Items' in response else []

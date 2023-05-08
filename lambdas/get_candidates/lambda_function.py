@@ -7,9 +7,9 @@ import json
 
 from rank_candidates import get_best_candidate
 
-SAMPLE_SIZE = 30        # cands per sample
+SAMPLE_SIZE = 10        # cands per sample
 GOOD_SAMPLE_SIZE = 5    # valid cands to stop sampling
-NUM_RETRIES = 1         # resamples before giving up
+NUM_RETRIES = 3         # resamples before giving up
 
 # Expected event format:
 #
