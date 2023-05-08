@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 
 from common import users
 from common.CORS import CORS
@@ -38,5 +38,7 @@ def lambda_handler(event, _):
     print(user)
     return {
         'statusCode': 200,
-        'body': json.dumps(str(user))
+        'body': json.dumps({
+            'user': user
+        })
     }
