@@ -1,4 +1,5 @@
 from botocore.exceptions import ClientError
+import boto3
 import json
 
 from common import users
@@ -29,6 +30,9 @@ from common.CORS import CORS
 # }
 
 
+ses = boto3.client('ses')
+
+
 @CORS
 def lambda_handler(event, _):
     user_id = event['pathParameters']['id']
@@ -40,6 +44,11 @@ def lambda_handler(event, _):
     # check whether there are too few songs
     if len(fields.get('top_tracks', [])) < 50 or len(fields.get('top_artists', [])) < 50:
         return {'statusCode': 400}
+
+    try:
+        ses.verify_email_identity(EmailAddress=fields['email'])
+    except Exception as e:
+        print('failed to send verify email:', e)
 
     users.create_user(user_id, **fields)
     return {'statusCode': 200}
