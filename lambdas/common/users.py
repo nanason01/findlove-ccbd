@@ -339,7 +339,7 @@ def sample_users(n: int = 10) -> List[str]:
         List[str]: user ids of users found
     """
     global last_eval_key
-    print('new')
+
     if last_eval_key:
         response = users.scan(
             ExclusiveStartKey=last_eval_key,
@@ -351,6 +351,7 @@ def sample_users(n: int = 10) -> List[str]:
             ProjectionExpression='id,gender,orientation'
         )
         last_eval_key = response.get('LastEvaluatedKey')
+
     print(response)
 
     return response['Items'] if 'Items' in response else []
