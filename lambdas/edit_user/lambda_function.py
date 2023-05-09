@@ -26,7 +26,7 @@ from common.CORS import CORS
 @CORS
 def lambda_handler(event, _):
     print(event)
-    user_id = event['pathParameters']['user_id']
+    user_id = event['pathParameters']['id']
     changed_fields = json.loads(event['body'])
 
     if not users.user_exists(user_id):
