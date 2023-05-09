@@ -36,7 +36,8 @@ def notify_match(candidate_id, user_id):
         "It's about to get more funky",
     ])
 
-    body = f"You just matched with {user['first_name']}, play it cool by messaging them right away!"
+    link = 'https://open.spotify.com/user/' + user_id
+    body = f"You just matched with {user['first_name']}, play it cool by <a href=\"{link}\">messaging them</a> right away!"
 
     try:
         ses.send_email(
@@ -46,7 +47,7 @@ def notify_match(candidate_id, user_id):
             },
             Message={
                 'Body': {
-                    'Text': {
+                    'Html': {
                         'Charset': 'utf-8',
                         'Data': body,
                     },
