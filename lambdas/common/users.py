@@ -326,6 +326,9 @@ def remove_match(user_1: str, user_2: str):
     remove_match_one_side(user_2, user_1)
 
 
+last_eval_key = None
+
+
 def sample_users(n: int = 10) -> List[str]:
     """Return a random sample of n users
 
@@ -335,9 +338,19 @@ def sample_users(n: int = 10) -> List[str]:
     Returns:
         List[str]: user ids of users found
     """
-    response = users.scan(
-        Limit=n,
-        ProjectionExpression='id,gender,orientation'
-    )
+    global last_eval_key
+    print('new')
+    if last_eval_key:
+        response = users.scan(
+            ExclusiveStartKey=last_eval_key,
+            ProjectionExpression='id,gender,orientation'
+        )
+        last_eval_key = response.get('LastEvaluatedKey')
+    else:
+        response = users.scan(
+            ProjectionExpression='id,gender,orientation'
+        )
+        last_eval_key = response.get('LastEvaluatedKey')
+    print(response)
 
     return response['Items'] if 'Items' in response else []
