@@ -196,26 +196,12 @@ def update_user(id: str, **fields):
         fields['dob'] = int(time.mktime(datetime.strptime(
             fields['dob'], '%m/%d/%Y').timetuple()))
 
-    update_expression = ', '.join([
-        f'SET #{field} = :new_{field}'
-        for field in fields
-    ])
+    old_user = get_user(id)
 
-    expression_attribute_names = {
-        f'#{field}': field for field in fields
-    }
+    for field, new_val in fields.items():
+        old_user[field] = new_val
 
-    expression_attribute_values = {
-        f':new_{field}': new_value
-        for field, new_value in fields.items()
-    }
-
-    users.update_item(
-        Key={'id': id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_attribute_names,
-        ExpressionAttributeValues=expression_attribute_values
-    )
+    users.put_item(Item=old_user)
 
 
 def delete_user(id: str):
